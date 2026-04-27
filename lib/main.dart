@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-void main() {
+import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(const UrbanExplorerApp());
 }
 
@@ -359,11 +363,18 @@ class _PlaceDetailPageState extends State<PlaceDetailPage> {
               width: double.infinity,
               height: 56,
               child: FilledButton.icon(
-                onPressed: () {
-                  setState(() {
-                    isFavourite = !isFavourite;
-                  });
-                },
+               onPressed: () async {
+  await FirebaseFirestore.instance.collection('favourites').add({
+    'name': place['name'],
+    'type': place['type'],
+    'description': place['description'],
+    'createdAt': FieldValue.serverTimestamp(),
+  });
+
+  setState(() {
+    isFavourite = true;
+  });
+},
                 icon: Icon(
                   isFavourite ? Icons.favorite : Icons.favorite_border,
                 ),

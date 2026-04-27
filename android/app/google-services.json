@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "938292374915",
+    "project_id": "urban-explorer-7eb22",
+    "storage_bucket": "urban-explorer-7eb22.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:938292374915:android:82999a77b108249f6a5ab6",
+        "android_client_info": {
+          "package_name": "com.example.urban_explorer"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA_lpSqz1kq1KKYwujEhnGNxrJWpeE2dDA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
