@@ -196,8 +196,21 @@ List<Map<String, dynamic>> apiPlaces = [];
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Urban Explorer'),
-      ),
+  title: const Text('Urban Explorer'),
+  actions: [
+    IconButton(
+      icon: const Icon(Icons.favorite),
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const FavouritesPage(),
+          ),
+        );
+      },
+    ),
+  ],
+),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -385,6 +398,79 @@ class _PlaceDetailPageState extends State<PlaceDetailPage> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+class FavouritesPage extends StatelessWidget {
+  const FavouritesPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('My Favourites'),
+      ),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('favourites')
+            .orderBy('createdAt', descending: true)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return const Center(
+              child: Text('Something went wrong loading favourites.'),
+            );
+          }
+
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+
+          final docs = snapshot.data!.docs;
+
+          if (docs.isEmpty) {
+            return const Center(
+              child: Text(
+                'No favourites saved yet.',
+                style: TextStyle(fontSize: 18),
+              ),
+            );
+          }
+
+          return ListView.separated(
+            padding: const EdgeInsets.all(20),
+            itemCount: docs.length,
+            separatorBuilder: (context, index) => const SizedBox(height: 12),
+            itemBuilder: (context, index) {
+              final data = docs[index].data() as Map<String, dynamic>;
+
+              final name = data['name'] ?? 'Unknown place';
+              final type = data['type'] ?? 'Place';
+              final description = data['description'] ?? 'No description';
+
+              return Card(
+                elevation: 2,
+                child: ListTile(
+                  contentPadding: const EdgeInsets.all(16),
+                  leading: const Icon(Icons.favorite, color: Colors.deepPurple),
+                  title: Text(
+                    name,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  subtitle: Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text('$type · $description'),
+                  ),
+                ),
+              );
+            },
+          );
+        },
       ),
     );
   }
