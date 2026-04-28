@@ -278,6 +278,13 @@ List<Map<String, dynamic>> apiPlaces = [];
         'type': 'Cafe',
         'description':
             (apiPlaces[index]['vicinity'] ?? 'No address available').toString(),
+            'image': apiPlaces[index]['photos'] != null &&
+        apiPlaces[index]['photos'].isNotEmpty
+    ? 'https://maps.googleapis.com/maps/api/place/photo'
+        '?maxwidth=400'
+        '&photo_reference=${apiPlaces[index]['photos'][0]['photo_reference']}'
+        '&key=AIzaSyCKsEC7MLoQdS_IfqVKpjspPiiHr1qmFpY'
+    : 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=400',
       };
 
                   return Card(
@@ -285,31 +292,54 @@ List<Map<String, dynamic>> apiPlaces = [];
   shape: RoundedRectangleBorder(
     borderRadius: BorderRadius.circular(20),
   ),
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.all(16),
-                      title: Text(
-                        place['name']!,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      subtitle: Padding(
-                        padding: const EdgeInsets.only(top: 8),
-                        child: Text(
-                          '${place['type']} · ${place['description']}',
-                        ),
-                      ),
-                      trailing: const Icon(Icons.arrow_forward_ios),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                PlaceDetailPage(place: place),
-                          ),
-                        );
-                      },
-                    ),
+                    child: Padding(
+  padding: const EdgeInsets.all(16),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      if (place['image'] != null && place['image']!.isNotEmpty)
+        ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Image.network(
+            place['image']!,
+            height: 140,
+            width: double.infinity,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              return Container(
+                height: 140,
+                width: double.infinity,
+                color: Colors.grey.shade200,
+                child: const Icon(Icons.image_not_supported),
+              );
+            },
+          ),
+        ),
+      if (place['image'] != null && place['image']!.isNotEmpty)
+        const SizedBox(height: 12),
+      ListTile(
+        contentPadding: EdgeInsets.zero,
+        title: Text(
+          place['name']!,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: Text('${place['type']} · ${place['description']}'),
+        ),
+        trailing: const Icon(Icons.arrow_forward_ios),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PlaceDetailPage(place: place),
+            ),
+          );
+        },
+      ),
+    ],
+  ),
+),
                   );
                 },
               ),
@@ -447,8 +477,21 @@ class FavouritesPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Favourites'),
-      ),
+  title: const Text('Urban Explorer'),
+  actions: [
+    IconButton(
+      icon: const Icon(Icons.favorite),
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const FavouritesPage(),
+          ),
+        );
+      },
+    ),
+  ],
+),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('favourites')
