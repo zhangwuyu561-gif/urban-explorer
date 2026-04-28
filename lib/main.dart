@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:url_launcher/url_launcher.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
@@ -334,6 +335,17 @@ class PlaceDetailPage extends StatefulWidget {
 
 class _PlaceDetailPageState extends State<PlaceDetailPage> {
   bool isFavourite = false;
+  Future<void> openInGoogleMaps(String placeName) async {
+  final encodedPlace = Uri.encodeComponent(placeName);
+  final url = Uri.parse(
+    'https://www.google.com/maps/search/?api=1&query=$encodedPlace',
+  );
+
+  await launchUrl(
+    url,
+    mode: LaunchMode.externalApplication,
+  );
+}
 
   @override
   Widget build(BuildContext context) {
@@ -385,9 +397,23 @@ class _PlaceDetailPageState extends State<PlaceDetailPage> {
             ),
             const Spacer(),
             SizedBox(
+  width: double.infinity,
+  height: 56,
+  child: OutlinedButton.icon(
+    onPressed: () {
+      openInGoogleMaps(place['name']!);
+    },
+    icon: const Icon(Icons.map),
+    label: const Text('Open in Google Maps'),
+  ),
+),
+
+const SizedBox(height: 12),
+            SizedBox(
               width: double.infinity,
               height: 56,
               child: FilledButton.icon(
+                
                onPressed: () async {
   await FirebaseFirestore.instance.collection('favourites').add({
     'name': place['name'],
