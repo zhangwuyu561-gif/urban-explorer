@@ -97,6 +97,9 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   String locationText = 'Getting location...';
 List<Map<String, dynamic>> apiPlaces = [];
+String selectedCategory = 'cafe';
+double? currentLat;
+double? currentLng;
   final List<String> categories = const [
     '☕ Cafés',
     '📚 Quiet Spaces',
@@ -165,17 +168,20 @@ List<Map<String, dynamic>> apiPlaces = [];
           '📍 Lat: ${position.latitude.toStringAsFixed(4)}, Lng: ${position.longitude.toStringAsFixed(4)}';
     });
 
-    fetchNearbyPlaces(position.latitude, position.longitude);
+    currentLat = position.latitude;
+currentLng = position.longitude;
+
+fetchNearbyPlaces(position.latitude, position.longitude, selectedCategory);
   }
 
-  Future<void> fetchNearbyPlaces(double lat, double lng) async {
+  Future<void> fetchNearbyPlaces(double lat, double lng, String type) async {
     const apiKey = 'AIzaSyCKsEC7MLoQdS_IfqVKpjspPiiHr1qmFpY';
 
     final url =
         'https://maps.googleapis.com/maps/api/place/nearbysearch/json'
         '?location=$lat,$lng'
         '&radius=1500'
-        '&type=cafe'
+        '&type=$type'
         '&key=$apiKey';
 
     final response = await http.get(Uri.parse(url));
@@ -249,10 +255,30 @@ List<Map<String, dynamic>> apiPlaces = [];
                 separatorBuilder: (context, index) =>
                     const SizedBox(width: 12),
                 itemBuilder: (context, index) {
-                  return Chip(
-                    label: Text(categories[index]),
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                  );
+                  final categoryLabel = categories[index];
+
+final categoryType = switch (categoryLabel) {
+  '☕ Cafés' => 'cafe',
+  '📚 Quiet Spaces' => 'library',
+  '🌳 Parks' => 'park',
+  '🎨 Interesting Spots' => 'tourist_attraction',
+  _ => 'cafe',
+};
+
+return ChoiceChip(
+  label: Text(categoryLabel),
+  selected: selectedCategory == categoryType,
+  onSelected: (selected) {
+    if (currentLat != null && currentLng != null) {
+      setState(() {
+        selectedCategory = categoryType;
+        apiPlaces = [];
+      });
+
+      fetchNearbyPlaces(currentLat!, currentLng!, selectedCategory);
+    }
+  },
+);
                 },
               ),
             ),
@@ -275,7 +301,7 @@ List<Map<String, dynamic>> apiPlaces = [];
     ? places[index]
     : {
         'name': (apiPlaces[index]['name'] ?? 'Unknown place').toString(),
-        'type': 'Cafe',
+        'type': selectedCategory,
         'description':
             (apiPlaces[index]['vicinity'] ?? 'No address available').toString(),
             'image': apiPlaces[index]['photos'] != null &&
