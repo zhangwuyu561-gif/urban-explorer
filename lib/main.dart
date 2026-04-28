@@ -388,26 +388,21 @@ class _PlaceDetailPageState extends State<PlaceDetailPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-  height: 200,
-  width: double.infinity,
-  decoration: BoxDecoration(
-    borderRadius: BorderRadius.circular(28),
-    gradient: LinearGradient(
-      colors: [
-        Colors.deepPurple.shade200,
-        Colors.deepPurple.shade50,
-      ],
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-    ),
-  ),
-  child: const Center(
-    child: Icon(
-      Icons.explore,
-      size: 90,
-      color: Colors.deepPurple,
-    ),
+            ClipRRect(
+  borderRadius: BorderRadius.circular(28),
+  child: Image.network(
+    place['image'] ?? 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=400',
+    height: 200,
+    width: double.infinity,
+    fit: BoxFit.cover,
+    errorBuilder: (context, error, stackTrace) {
+      return Container(
+        height: 200,
+        width: double.infinity,
+        color: Colors.grey.shade200,
+        child: const Icon(Icons.image_not_supported),
+      );
+    },
   ),
 ),
             const SizedBox(height: 24),
