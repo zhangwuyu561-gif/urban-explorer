@@ -280,7 +280,10 @@ List<Map<String, dynamic>> apiPlaces = [];
       };
 
                   return Card(
-                    elevation: 2,
+  elevation: 4,
+  shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(20),
+  ),
                     child: ListTile(
                       contentPadding: const EdgeInsets.all(16),
                       title: Text(
@@ -344,18 +347,27 @@ class _PlaceDetailPageState extends State<PlaceDetailPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              height: 180,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.deepPurple.shade100,
-                borderRadius: BorderRadius.circular(28),
-              ),
-              child: const Icon(
-                Icons.place,
-                size: 80,
-                color: Colors.deepPurple,
-              ),
-            ),
+  height: 200,
+  width: double.infinity,
+  decoration: BoxDecoration(
+    borderRadius: BorderRadius.circular(28),
+    gradient: LinearGradient(
+      colors: [
+        Colors.deepPurple.shade200,
+        Colors.deepPurple.shade50,
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+  ),
+  child: const Center(
+    child: Icon(
+      Icons.explore,
+      size: 90,
+      color: Colors.deepPurple,
+    ),
+  ),
+),
             const SizedBox(height: 24),
             Text(
               place['name']!,
@@ -452,10 +464,19 @@ class FavouritesPage extends StatelessWidget {
               final description = data['description'] ?? 'No description';
 
               return Card(
-                elevation: 2,
-                child: ListTile(
+  elevation: 4,
+  shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(20),
+  ),
+  child: ListTile(
                   contentPadding: const EdgeInsets.all(16),
-                  leading: const Icon(Icons.favorite, color: Colors.deepPurple),
+                  leading: CircleAvatar(
+  backgroundColor: Colors.deepPurple.shade100,
+  child: const Icon(
+    Icons.favorite,
+    color: Colors.deepPurple,
+  ),
+),
                   title: Text(
                     name,
                     style: const TextStyle(
