@@ -5,6 +5,8 @@ import 'package:http/http.dart' as http;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
@@ -205,6 +207,21 @@ fetchNearbyPlaces(position.latitude, position.longitude, selectedCategory);
       appBar: AppBar(
   title: const Text('Urban Explorer'),
   actions: [
+    IconButton(
+  icon: const Icon(Icons.map),
+  onPressed: () {
+    if (apiPlaces.isNotEmpty) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MapViewPage(
+            places: apiPlaces,
+          ),
+        ),
+      );
+    }
+  },
+),
     IconButton(
   icon: const Icon(Icons.history),
   onPressed: () {
@@ -717,6 +734,72 @@ class HistoryPage extends StatelessWidget {
             },
           );
         },
+      ),
+    );
+  }
+}
+class MapViewPage extends StatelessWidget {
+  final List<Map<String, dynamic>> places;
+
+  const MapViewPage({
+    super.key,
+    required this.places,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final validPlaces = places.where((place) {
+      return place['geometry'] != null &&
+          place['geometry']['location'] != null &&
+          place['geometry']['location']['lat'] != null &&
+          place['geometry']['location']['lng'] != null;
+    }).toList();
+
+    final firstLocation = validPlaces.isNotEmpty
+        ? validPlaces.first['geometry']['location']
+        : {'lat': 51.5246, 'lng': -0.1340};
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Map View'),
+      ),
+      body: FlutterMap(
+        options: MapOptions(
+          initialCenter: LatLng(
+            firstLocation['lat'],
+            firstLocation['lng'],
+          ),
+          initialZoom: 14,
+        ),
+        children: [
+          TileLayer(
+            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+            userAgentPackageName: 'com.example.urban_explorer',
+          ),
+          MarkerLayer(
+            markers: validPlaces.map((place) {
+              final location = place['geometry']['location'];
+              final name = place['name'] ?? 'Place';
+
+              return Marker(
+                point: LatLng(
+                  location['lat'],
+                  location['lng'],
+                ),
+                width: 80,
+                height: 80,
+                child: Tooltip(
+                  message: name,
+                  child: const Icon(
+                    Icons.location_on,
+                    color: Colors.deepPurple,
+                    size: 40,
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
       ),
     );
   }
