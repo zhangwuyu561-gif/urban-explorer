@@ -539,7 +539,62 @@ class _PlaceDetailPageState extends State<PlaceDetailPage> {
                 color: Colors.black54,
               ),
             ),
+const SizedBox(height: 12),
 
+StreamBuilder<QuerySnapshot>(
+  stream: FirebaseFirestore.instance
+      .collection('comments')
+      .where('placeName', isEqualTo: place['name'])
+      .snapshots(),
+  builder: (context, snapshot) {
+    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+      return const Text(
+        'No ratings yet',
+        style: TextStyle(
+          fontSize: 16,
+          color: Colors.black54,
+        ),
+      );
+    }
+
+    final comments = snapshot.data!.docs;
+
+    double totalRating = 0;
+
+    for (final doc in comments) {
+      final data = doc.data() as Map<String, dynamic>;
+      totalRating += (data['rating'] ?? 0).toDouble();
+    }
+
+    final averageRating = totalRating / comments.length;
+
+    return Row(
+      children: [
+        const Icon(
+          Icons.star,
+          color: Colors.amber,
+          size: 22,
+        ),
+        const SizedBox(width: 6),
+        Text(
+          averageRating.toStringAsFixed(1),
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          '${comments.length} reviews',
+          style: const TextStyle(
+            fontSize: 16,
+            color: Colors.black54,
+          ),
+        ),
+      ],
+    );
+  },
+),
             const SizedBox(height: 24),
 
             Text(
