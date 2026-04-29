@@ -206,6 +206,17 @@ fetchNearbyPlaces(position.latitude, position.longitude, selectedCategory);
   title: const Text('Urban Explorer'),
   actions: [
     IconButton(
+  icon: const Icon(Icons.history),
+  onPressed: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const HistoryPage(),
+      ),
+    );
+  },
+),
+    IconButton(
       icon: const Icon(Icons.favorite),
       onPressed: () {
         Navigator.push(
@@ -354,8 +365,16 @@ return ChoiceChip(
           child: Text('${place['type']} · ${place['description']}'),
         ),
         trailing: const Icon(Icons.arrow_forward_ios),
-        onTap: () {
-          Navigator.push(
+        onTap: () async {
+  await FirebaseFirestore.instance.collection('history').add({
+    'name': place['name'],
+    'type': place['type'],
+    'description': place['description'],
+    'image': place['image'] ?? '',
+    'viewedAt': FieldValue.serverTimestamp(),
+  });
+
+  Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => PlaceDetailPage(place: place),
@@ -604,6 +623,94 @@ class FavouritesPage extends StatelessWidget {
                       padding: const EdgeInsets.only(top: 8),
                       child: Text('$type · $description'),
                     ),
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+class HistoryPage extends StatelessWidget {
+  const HistoryPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Visited History'),
+      ),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('history')
+            .orderBy('viewedAt', descending: true)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return const Center(
+              child: Text('Something went wrong loading history.'),
+            );
+          }
+
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+
+          final docs = snapshot.data!.docs;
+
+          if (docs.isEmpty) {
+            return const Center(
+              child: Text(
+                'No places viewed yet.',
+                style: TextStyle(fontSize: 18),
+              ),
+            );
+          }
+
+          return ListView.separated(
+            padding: const EdgeInsets.all(20),
+            itemCount: docs.length,
+            separatorBuilder: (context, index) => const SizedBox(height: 12),
+            itemBuilder: (context, index) {
+              final data = docs[index].data() as Map<String, dynamic>;
+
+              final name = data['name'] ?? 'Unknown place';
+              final type = data['type'] ?? 'Place';
+              final description = data['description'] ?? 'No description';
+              final image = data['image'] ?? '';
+
+              return Card(
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: ListTile(
+                  contentPadding: const EdgeInsets.all(16),
+                  leading: image.toString().isNotEmpty
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Image.network(
+                            image,
+                            width: 56,
+                            height: 56,
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                      : CircleAvatar(
+                          backgroundColor: Colors.deepPurple.shade100,
+                          child: const Icon(Icons.history),
+                        ),
+                  title: Text(
+                    name,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text('$type · $description'),
                   ),
                 ),
               );
