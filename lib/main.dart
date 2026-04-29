@@ -427,92 +427,162 @@ class PlaceDetailPage extends StatefulWidget {
 
 class _PlaceDetailPageState extends State<PlaceDetailPage> {
   bool isFavourite = false;
-  Future<void> openInGoogleMaps(String placeName) async {
-  final encodedPlace = Uri.encodeComponent(placeName);
-  final url = Uri.parse(
-    'https://www.google.com/maps/search/?api=1&query=$encodedPlace',
-  );
 
-  await launchUrl(
-    url,
-    mode: LaunchMode.externalApplication,
-  );
-}
+  final TextEditingController commentController = TextEditingController();
+  final TextEditingController usernameController = TextEditingController();
+
+  int selectedRating = 5;
+  String selectedTag = 'Study';
+
+  final List<String> commentTags = [
+    'Study',
+    'Relax',
+    'Social',
+    'Hidden Gem',
+    'Good Atmosphere',
+  ];
+
+  Future<void> openInGoogleMaps(String placeName) async {
+    final encodedPlace = Uri.encodeComponent(placeName);
+    final url = Uri.parse(
+      'https://www.google.com/maps/search/?api=1&query=$encodedPlace',
+    );
+
+    await launchUrl(
+      url,
+      mode: LaunchMode.externalApplication,
+    );
+  }
+
+  Future<void> addComment() async {
+    final place = widget.place;
+    final commentText = commentController.text.trim();
+    final username = usernameController.text.trim();
+
+    if (commentText.isEmpty) {
+      return;
+    }
+
+    await FirebaseFirestore.instance.collection('comments').add({
+      'placeName': place['name'],
+      'username': username.isEmpty ? 'Anonymous user' : username,
+      'comment': commentText,
+      'rating': selectedRating,
+      'tag': selectedTag,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+
+    commentController.clear();
+    usernameController.clear();
+
+    setState(() {
+      selectedRating = 5;
+      selectedTag = 'Study';
+    });
+  }
+
+  @override
+  void dispose() {
+    commentController.dispose();
+    usernameController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final place = widget.place;
 
     return Scaffold(
-      appBar: AppBar(title: Text(place['name']!)),
-      body: Padding(
+      appBar: AppBar(
+        title: Text(place['name']!),
+      ),
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ClipRRect(
-  borderRadius: BorderRadius.circular(28),
-  child: Image.network(
-    place['image'] ?? 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=400',
-    height: 200,
-    width: double.infinity,
-    fit: BoxFit.cover,
-    errorBuilder: (context, error, stackTrace) {
-      return Container(
-        height: 200,
-        width: double.infinity,
-        color: Colors.grey.shade200,
-        child: const Icon(Icons.image_not_supported),
-      );
-    },
-  ),
-),
+              borderRadius: BorderRadius.circular(28),
+              child: Image.network(
+                place['image'] ??
+                    'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=400',
+                height: 200,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    height: 200,
+                    width: double.infinity,
+                    color: Colors.grey.shade200,
+                    child: const Icon(Icons.image_not_supported),
+                  );
+                },
+              ),
+            ),
+
             const SizedBox(height: 24),
+
             Text(
               place['name']!,
-              style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+              ),
             ),
+
             const SizedBox(height: 8),
+
             Text(
               place['type']!,
-              style: const TextStyle(fontSize: 18, color: Colors.black54),
+              style: const TextStyle(
+                fontSize: 18,
+                color: Colors.black54,
+              ),
             ),
+
             const SizedBox(height: 24),
+
             Text(
               place['description']!,
-              style: const TextStyle(fontSize: 17, height: 1.5),
+              style: const TextStyle(
+                fontSize: 17,
+                height: 1.5,
+              ),
             ),
-            const Spacer(),
-            SizedBox(
-  width: double.infinity,
-  height: 56,
-  child: OutlinedButton.icon(
-    onPressed: () {
-      openInGoogleMaps(place['name']!);
-    },
-    icon: const Icon(Icons.map),
-    label: const Text('Open in Google Maps'),
-  ),
-),
 
-const SizedBox(height: 12),
+            const SizedBox(height: 24),
+
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  openInGoogleMaps(place['name']!);
+                },
+                icon: const Icon(Icons.map),
+                label: const Text('Open in Google Maps'),
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
             SizedBox(
               width: double.infinity,
               height: 56,
               child: FilledButton.icon(
-                
-               onPressed: () async {
-  await FirebaseFirestore.instance.collection('favourites').add({
-    'name': place['name'],
-    'type': place['type'],
-    'description': place['description'],
-    'createdAt': FieldValue.serverTimestamp(),
-  });
+                onPressed: () async {
+                  await FirebaseFirestore.instance.collection('favourites').add({
+                    'name': place['name'],
+                    'type': place['type'],
+                    'description': place['description'],
+                    'image': place['image'] ?? '',
+                    'createdAt': FieldValue.serverTimestamp(),
+                  });
 
-  setState(() {
-    isFavourite = true;
-  });
-},
+                  setState(() {
+                    isFavourite = true;
+                  });
+                },
                 icon: Icon(
                   isFavourite ? Icons.favorite : Icons.favorite_border,
                 ),
@@ -520,6 +590,173 @@ const SizedBox(height: 12),
                   isFavourite ? 'Saved to Favourites' : 'Save to Favourites',
                 ),
               ),
+            ),
+
+            const SizedBox(height: 32),
+
+            const Text(
+              'Comments',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            TextField(
+              controller: usernameController,
+              decoration: InputDecoration(
+                hintText: 'Your name',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            TextField(
+              controller: commentController,
+              decoration: InputDecoration(
+                hintText: 'Share your thoughts about this place...',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            Row(
+              children: List.generate(5, (index) {
+                final starNumber = index + 1;
+
+                return IconButton(
+                  icon: Icon(
+                    starNumber <= selectedRating
+                        ? Icons.star
+                        : Icons.star_border,
+                    color: Colors.amber,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      selectedRating = starNumber;
+                    });
+                  },
+                );
+              }),
+            ),
+
+            Wrap(
+              spacing: 8,
+              children: commentTags.map((tag) {
+                return ChoiceChip(
+                  label: Text(tag),
+                  selected: selectedTag == tag,
+                  onSelected: (selected) {
+                    setState(() {
+                      selectedTag = tag;
+                    });
+                  },
+                );
+              }).toList(),
+            ),
+
+            const SizedBox(height: 12),
+
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: addComment,
+                child: const Text('Post Comment'),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('comments')
+                  .where('placeName', isEqualTo: place['name'])
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return const Text('No comments yet.');
+                }
+
+                final comments = snapshot.data!.docs;
+
+                return ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: comments.length,
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: 8),
+                  itemBuilder: (context, index) {
+                    final data =
+                        comments[index].data() as Map<String, dynamic>;
+
+                    final username = data['username'] ?? 'Anonymous user';
+                    final comment = data['comment'] ?? '';
+                    final rating = data['rating'] ?? 5;
+                    final tag = data['tag'] ?? 'General';
+
+                    return Card(
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(14),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                CircleAvatar(
+                                  backgroundColor:
+                                      Colors.deepPurple.shade100,
+                                  child: const Icon(
+                                    Icons.person,
+                                    color: Colors.deepPurple,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    username,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                Text(
+                                  '⭐ $rating',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            Text(comment),
+                            const SizedBox(height: 8),
+                            Chip(
+                              label: Text(tag),
+                              visualDensity: VisualDensity.compact,
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
             ),
           ],
         ),
