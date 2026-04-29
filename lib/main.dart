@@ -202,62 +202,74 @@ fetchNearbyPlaces(position.latitude, position.longitude, selectedCategory);
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-  title: const Text('Urban Explorer'),
-  actions: [
-    IconButton(
-  icon: const Icon(Icons.map),
-  onPressed: () {
-    if (apiPlaces.isNotEmpty) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => MapViewPage(
-            places: apiPlaces,
-          ),
-        ),
-      );
-    }
-  },
-),
-    IconButton(
-  icon: const Icon(Icons.history),
-  onPressed: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const HistoryPage(),
-      ),
-    );
-  },
-),
-    IconButton(
-      icon: const Icon(Icons.favorite),
-      onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const FavouritesPage(),
-          ),
-        );
-      },
-    ),
-  ],
-),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              locationText,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.black54,
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      title: const Text('Urban Explorer'),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.people),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const CommunityPage(),
               ),
+            );
+          },
+        ),
+        IconButton(
+          icon: const Icon(Icons.map),
+          onPressed: () {
+            if (apiPlaces.isNotEmpty) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => MapViewPage(
+                    places: apiPlaces,
+                  ),
+                ),
+              );
+            }
+          },
+        ),
+        IconButton(
+          icon: const Icon(Icons.history),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const HistoryPage(),
+              ),
+            );
+          },
+        ),
+        IconButton(
+          icon: const Icon(Icons.favorite),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const FavouritesPage(),
+              ),
+            );
+          },
+        ),
+      ],
+    ),
+
+    body: Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            locationText,
+            style: const TextStyle(
+              fontSize: 14,
+              color: Colors.black54,
             ),
+          ),
             const SizedBox(height: 8),
             const Text(
               'Explore nearby',
@@ -1092,6 +1104,98 @@ class MapViewPage extends StatelessWidget {
             }).toList(),
           ),
         ],
+      ),
+    );
+  }
+}
+class CommunityPage extends StatelessWidget {
+  const CommunityPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Community'),
+      ),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('comments')
+            .orderBy('createdAt', descending: true)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return const Center(child: Text('No posts yet.'));
+          }
+
+          final posts = snapshot.data!.docs;
+
+          return ListView.separated(
+            padding: const EdgeInsets.all(20),
+            itemCount: posts.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 12),
+            itemBuilder: (context, index) {
+              final data = posts[index].data() as Map<String, dynamic>;
+
+              final placeName = data['placeName'] ?? 'Unknown place';
+              final username = data['username'] ?? 'Anonymous';
+              final comment = data['comment'] ?? '';
+              final rating = data['rating'] ?? 5;
+              final tag = data['tag'] ?? '';
+
+              return Card(
+                elevation: 3,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        placeName,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                      ),
+
+                      const SizedBox(height: 6),
+
+                      Row(
+                        children: [
+                          Text('⭐ $rating'),
+                          const SizedBox(width: 8),
+                          Chip(
+                            label: Text(tag),
+                            visualDensity: VisualDensity.compact,
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      Text(comment),
+
+                      const SizedBox(height: 10),
+
+                      Text(
+                        '— $username',
+                        style: const TextStyle(
+                          color: Colors.black54,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        },
       ),
     );
   }
