@@ -200,7 +200,20 @@ fetchNearbyPlaces(position.latitude, position.longitude, selectedCategory);
       });
     }
   }
-
+List<String> getPlaceTags(String type) {
+  switch (type) {
+    case 'cafe':
+      return ['Social', 'Coffee', 'Work Friendly'];
+    case 'library':
+      return ['Quiet', 'Study Friendly', 'Focused'];
+    case 'park':
+      return ['Relaxing', 'Outdoor', 'Nature'];
+    case 'tourist_attraction':
+      return ['Explore', 'Hidden Gem', 'Culture'];
+    default:
+      return ['Nearby', 'Urban'];
+  }
+}
   @override
 Widget build(BuildContext context) {
   return Scaffold(
@@ -367,7 +380,7 @@ return ChoiceChip(
         ClipRRect(
           borderRadius: BorderRadius.circular(16),
           child: Image.network(
-            place['image']!,
+  place['image'] ?? 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=400',
             height: 140,
             width: double.infinity,
             fit: BoxFit.cover,
@@ -383,10 +396,25 @@ return ChoiceChip(
         ),
       if (place['image'] != null && place['image']!.isNotEmpty)
         const SizedBox(height: 12),
+        Wrap(
+  spacing: 8,
+  children: (place['tags'] ?? '')
+    .split(',')
+    .where((tag) => tag.isNotEmpty)
+      .map(
+        (tag) => Chip(
+          label: Text(tag),
+          visualDensity: VisualDensity.compact,
+        ),
+      )
+      .toList(),
+),
+
+const SizedBox(height: 8),
       ListTile(
         contentPadding: EdgeInsets.zero,
         title: Text(
-          place['name']!,
+          place['name']??'Unknown place',
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: Padding(
@@ -400,6 +428,7 @@ return ChoiceChip(
     'type': place['type'],
     'description': place['description'],
     'image': place['image'] ?? '',
+    'tags': getPlaceTags(selectedCategory).join(','),
     'viewedAt': FieldValue.serverTimestamp(),
   });
 
@@ -506,7 +535,7 @@ class _PlaceDetailPageState extends State<PlaceDetailPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(place['name']!),
+        title: Text(place['name'] ?? 'Unknown place')
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -544,13 +573,30 @@ class _PlaceDetailPageState extends State<PlaceDetailPage> {
 
             const SizedBox(height: 8),
 
-            Text(
-              place['type']!,
-              style: const TextStyle(
-                fontSize: 18,
-                color: Colors.black54,
-              ),
-            ),
+           Text(
+  place['type']!,
+  style: const TextStyle(
+    fontSize: 18,
+    color: Colors.black54,
+  ),
+),
+
+const SizedBox(height: 12),
+
+if (place['tags'] != null && place['tags']!.isNotEmpty)
+  Wrap(
+    spacing: 8,
+    children: place['tags']!
+        .split(',')
+        .map(
+          (tag) => Chip(
+            label: Text(tag),
+            visualDensity: VisualDensity.compact,
+          ),
+        )
+        .toList(),
+  ),
+
 const SizedBox(height: 12),
 
 StreamBuilder<QuerySnapshot>(
@@ -642,6 +688,7 @@ StreamBuilder<QuerySnapshot>(
                     'name': place['name'],
                     'type': place['type'],
                     'description': place['description'],
+                    'tags': place['tags'] ?? '',
                     'image': place['image'] ?? '',
                     'createdAt': FieldValue.serverTimestamp(),
                   });
