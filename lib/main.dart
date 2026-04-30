@@ -98,6 +98,8 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   String locationText = 'Getting location...';
+  String weatherText = 'Loading weather...';
+String weatherTip = '';
 List<Map<String, dynamic>> apiPlaces = [];
 String selectedCategory = 'cafe';
 double? currentLat;
@@ -174,6 +176,7 @@ double? currentLng;
 currentLng = position.longitude;
 
 fetchNearbyPlaces(position.latitude, position.longitude, selectedCategory);
+fetchWeather(position.latitude, position.longitude);
   }
 
   Future<void> fetchNearbyPlaces(double lat, double lng, String type) async {
@@ -200,6 +203,38 @@ fetchNearbyPlaces(position.latitude, position.longitude, selectedCategory);
       });
     }
   }
+  Future<void> fetchWeather(double lat, double lng) async {
+  const weatherApiKey = 'b29390fa3d51e951dcec692c354d33a2';
+
+  final url =
+      'https://api.openweathermap.org/data/2.5/weather'
+      '?lat=$lat&lon=$lng&appid=$weatherApiKey&units=metric';
+
+  final response = await http.get(Uri.parse(url));
+
+  if (response.statusCode == 200) {
+    final data = json.decode(response.body);
+
+    final temp = data['main']['temp'];
+    final condition = data['weather'][0]['main'];
+
+    setState(() {
+      weatherText = '🌦 ${temp.round()}°C · $condition';
+
+      if (condition.toString().toLowerCase().contains('rain')) {
+        weatherTip = 'Rainy today — indoor places may be better.';
+      } else if (temp >= 18) {
+        weatherTip = 'Nice weather — parks and outdoor spots are a good choice.';
+      } else {
+        weatherTip = 'Cool weather — cafés and libraries may be comfortable.';
+      }
+    });
+  } else {
+    setState(() {
+      weatherText = 'Weather unavailable';
+    });
+  }
+}
 List<String> getPlaceTags(String type) {
   switch (type) {
     case 'cafe':
@@ -283,6 +318,38 @@ Widget build(BuildContext context) {
               color: Colors.black54,
             ),
           ),
+          const SizedBox(height: 12),
+
+Container(
+  width: double.infinity,
+  padding: const EdgeInsets.all(16),
+  decoration: BoxDecoration(
+    color: Colors.deepPurple.shade50,
+    borderRadius: BorderRadius.circular(20),
+  ),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        weatherText,
+        style: const TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      if (weatherTip.isNotEmpty) ...[
+        const SizedBox(height: 8),
+        Text(
+          weatherTip,
+          style: const TextStyle(
+            fontSize: 14,
+            color: Colors.black54,
+          ),
+        ),
+      ],
+    ],
+  ),
+),
             const SizedBox(height: 8),
             const Text(
               'Explore nearby',
