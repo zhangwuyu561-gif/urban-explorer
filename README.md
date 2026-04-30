@@ -90,7 +90,7 @@ Personalized recommendations
 Dark mode support
 
 ### 👨‍💻 Author
-Your Name
+Wuyu Zhang
 
 ### License
 This project is for educational purposes.
