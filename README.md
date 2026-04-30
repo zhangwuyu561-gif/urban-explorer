@@ -1,25 +1,73 @@
-# Urban Explorer
+# 🌍 Urban Explorer
 
-## App Idea
-Urban Explorer is a Flutter mobile application that helps users discover interesting places nearby based on their current location.
+Urban Explorer is a Flutter mobile application that helps users discover interesting places nearby based on their location, mood, and preferences.
 
-## Problem Statement
-Cities contain many interesting, useful, and relaxing places, but users often rely on generic map searches or reviews. It can be difficult to quickly find places that match their current needs, such as a quiet space, a café, or somewhere worth exploring. Urban Explorer uses GPS, a Places API, and saved favourites to help users discover and return to meaningful urban locations.
+---
 
-## Target Users
-The app is designed for students, city walkers, and people who want to explore nearby places in a more intentional and personalised way.
+## ✨ Features
 
-## Planned Features
-- Splash screen and onboarding
-- GPS-based current location detection
-- Nearby place recommendations
-- Categories such as cafés, quiet spaces, parks, and interesting spots
-- Place detail screen
-- Favourite/save function
-- Firebase storage for saved favourites
-- Simple exploratory journey through the city
+### 📍 Location-Based Discovery
+- Uses GPS to detect user's current location
+- Finds nearby places using Google Places API
 
-## Sensors and Services
-- GPS / location sensor
-- Google Places API or Foursquare Places API
-- Firebase Firestore for saved favourites
+### 🏷 Category Filtering
+- Explore different types of places:
+  - ☕ Cafés
+  - 📚 Quiet Spaces
+  - 🌳 Parks
+  - 🎨 Interesting Spots
+
+### 🌦 Weather-Aware Recommendations
+- Displays real-time weather using OpenWeather API
+- Suggests suitable places based on weather conditions
+
+### 🖼 Place Details
+- View images, descriptions, and tags
+- Open location in Google Maps
+
+### ❤️ Favourites
+- Save favourite places using Firebase Firestore
+- Swipe to delete saved items
+
+### 🕘 History Tracking
+- Automatically records visited places
+- View browsing history anytime
+
+### 💬 Comments & Ratings
+- Users can leave comments for places
+- Give star ratings
+
+### 🌐 Community Feed
+- View posts from other users
+- Share experiences and recommendations
+
+### 🗺 Map View
+- View nearby places on a map
+
+---
+
+## 🛠 Tech Stack
+
+- **Frontend:** Flutter (Dart)
+- **Backend:** Firebase Firestore
+- **APIs:**
+  - Google Places API
+  - OpenWeather API
+- **Other:**
+  - Geolocator (GPS)
+  - URL Launcher (Google Maps)
+
+---
+
+## 📸 Screenshots
+
+> Add your app screenshots here
+
+---
+
+## 🚀 Getting Started
+
+### 1. Clone the repository
+```bash
+git clone https://github.com/your-username/urban-explorer.git
+cd urban-explorer
