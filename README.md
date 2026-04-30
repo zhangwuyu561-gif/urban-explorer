@@ -77,6 +77,7 @@ flutter pub get
 
 ### 3. Configure API keys
 Add your Google Places API key
+
 Add your OpenWeather API key
 
 ### 4. Run the app
