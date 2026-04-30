@@ -68,6 +68,29 @@ Urban Explorer is a Flutter mobile application that helps users discover interes
 ## 🚀 Getting Started
 
 ### 1. Clone the repository
-```bash
+
 git clone https://github.com/your-username/urban-explorer.git
 cd urban-explorer
+
+### 2. Install dependencies
+flutter pub get
+
+### 3. Configure API keys
+Add your Google Places API key
+Add your OpenWeather API key
+
+### 4. Run the app
+flutter run
+
+### 📌 Future Improvements
+User authentication (login/signup)
+Upload photos with comments
+Like & reply to comments
+Personalized recommendations
+Dark mode support
+
+### 👨‍💻 Author
+Your Name
+
+### License
+This project is for educational purposes.
