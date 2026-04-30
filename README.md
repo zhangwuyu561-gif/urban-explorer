@@ -69,7 +69,7 @@ Urban Explorer is a Flutter mobile application that helps users discover interes
 
 ### 1. Clone the repository
 
-git clone https://github.com/your-username/urban-explorer.git
+git clone https://github.com/zhangwuyu561-gif/urban-explorer.git
 cd urban-explorer
 
 ### 2. Install dependencies
