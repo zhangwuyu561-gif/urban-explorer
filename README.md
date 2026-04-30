@@ -85,9 +85,13 @@ flutter run
 
 ### 📌 Future Improvements
 User authentication (login/signup)
+
 Upload photos with comments
+
 Like & reply to comments
+
 Personalized recommendations
+
 Dark mode support
 
 ### 👨‍💻 Author
